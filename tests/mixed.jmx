@@ -303,7 +303,7 @@ vars.put(&quot;xVar_scenarioNumber&quot;, scenario)
           </JSR223PreProcessor>
           <hashTree/>
         </hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="01_Open_swagger" enabled="true">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="01_Open_swagger">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
         <hashTree>
@@ -413,6 +413,100 @@ vars.put(&quot;xVar_username&quot;,tmp)
 // set username
 </stringProp>
             </JSR223PostProcessor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Get_Todos_with_error">
+            <stringProp name="HTTPSampler.path">/todos/Get_Todos_with_error</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="query_param1" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.value">debug1</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">query_param1</stringProp>
+                </elementProp>
+                <elementProp name="query_param2" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.value">debug2</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">query_param2</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Get_todo_number_value">
+              <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+              <stringProp name="RegexExtractor.refname">number</stringProp>
+              <stringProp name="RegexExtractor.regex">&quot;id&quot;: (.+?),</stringProp>
+              <stringProp name="RegexExtractor.template">$1$</stringProp>
+              <stringProp name="RegexExtractor.default">NOT_FOUND</stringProp>
+              <stringProp name="RegexExtractor.match_number">-1</stringProp>
+              <boolProp name="RegexExtractor.default_empty_value">false</boolProp>
+            </RegexExtractor>
+            <hashTree/>
+            <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Get_link_selected_value">
+              <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+              <stringProp name="RegexExtractor.refname">link_selected</stringProp>
+              <stringProp name="RegexExtractor.regex">&quot;task&quot;: &quot;(.+?)&quot;</stringProp>
+              <stringProp name="RegexExtractor.template">$1$</stringProp>
+              <stringProp name="RegexExtractor.default">NOT_FOUND</stringProp>
+              <stringProp name="RegexExtractor.match_number">-1</stringProp>
+              <boolProp name="RegexExtractor.default_empty_value">false</boolProp>
+            </RegexExtractor>
+            <hashTree/>
+            <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Get_Todos">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">false</stringProp>
+              <stringProp name="script">map = [:]
+map.put(&quot;${number_1}&quot;.toInteger(),&quot;${link_selected_1}&quot;)
+map.put(&quot;${number_2}&quot;.toInteger(),&quot;${link_selected_2}&quot;)
+map.put(&quot;${number_3}&quot;.toInteger(),&quot;${link_selected_3}&quot;)
+map.put(&quot;${number_4}&quot;.toInteger(),&quot;${link_selected_4}&quot;)
+//map.each{ k, v -&gt; log.info(&quot;${k}:${v}\n&quot;) }
+
+// TODO: add sorting 
+//map = map.sort {it.key}
+//lastNumber = map.keySet().last().toString().replace(&quot;&apos;&quot;, &quot;\&quot;&quot;
+//lastTodo = map.values().last().toString().replace(&quot;&apos;&quot;, &quot;\&quot;&quot;)
+//vars.put(&quot;num&quot;, &quot;${lastNumber}&quot;)
+//vars.put(&quot;todo&quot;, &quot;${lastTodo}&quot;)
+
+import groovy.json.JsonSlurper;
+map.each{ k, v -&gt; {
+		def jsonBody = (new JsonSlurper()).parseText(v.replace(&quot;&apos;&quot;, &quot;\&quot;&quot;))
+
+		vars.put(&quot;xVar_todo${k}_name&quot;, jsonBody.keySet().last().toString())
+		def value = jsonBody.values().last().toString().replace(&quot;https://${environment}&quot;,&quot;&quot;)
+		vars.put(&quot;xVar_todo${k}_link&quot;, value)
+	} 
+}
+
+// set pwd
+def tmp = &quot;test${__time(,)}&quot;
+vars.put(&quot;xVar_username&quot;,tmp)
+
+// set username
+</stringProp>
+            </JSR223PostProcessor>
+            <hashTree/>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="make_failed">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="-937867915">debug assertion</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.custom_message"></stringProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">16</intProp>
+            </ResponseAssertion>
             <hashTree/>
           </hashTree>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Post_Todos_with_error">
